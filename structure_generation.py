@@ -275,6 +275,34 @@ class RecursiveGeneration:
         return result
 
 
+def map_czbiohub_and_swift_structures(seed: int = 0) -> Dict[str, Dict]:
+    """
+    Map structural generations between CZ Biohub and Swift-based market making.
+    
+    Creates two seeded domains representing each context and returns their
+    relationship map for downstream alignment.
+    """
+    rng = np.random.default_rng(seed)
+    generator = StructureGenerator()
+
+    def _seeded_domain(size: int, bias: float) -> Dict:
+        base = rng.normal(loc=bias, scale=0.05, size=(size, size))
+        base = (base + base.T) / 2
+        return generator.bootstrap_domain(base)
+
+    czbiohub_domain = _seeded_domain(6, 0.15)
+    swift_domain = _seeded_domain(6, -0.05)
+
+    meta = MetaStructure()
+    relationship_map = meta.map_domain_relationships([czbiohub_domain, swift_domain])
+
+    return {
+        "czbiohub": czbiohub_domain,
+        "swift_market_making": swift_domain,
+        "relationship_map": relationship_map
+    }
+
+
 def demonstrate_structure_generation():
     """
     Demonstrate: Creating domains from Vā.
@@ -370,4 +398,3 @@ def demonstrate_structure_generation():
 
 if __name__ == "__main__":
     demonstrate_structure_generation()
-

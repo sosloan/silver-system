@@ -13,7 +13,7 @@ Creating the map as it goes.
 import numpy as np
 from scipy.linalg import eigh
 from scipy.sparse import csgraph
-from typing import List, Dict, Optional
+from typing import Any, List, Dict, Optional
 from dataclasses import dataclass
 
 
@@ -275,7 +275,13 @@ class RecursiveGeneration:
         return result
 
 
-def map_czbiohub_and_swift_structures(seed: int = 0) -> Dict[str, Dict]:
+def map_czbiohub_and_swift_structures(
+    seed: int = 0,
+    size: int = 6,
+    scale: float = 0.05,
+    cz_bias: float = 0.15,
+    swift_bias: float = -0.05
+) -> Dict[str, Any]:
     """
     Map structural generations between CZ Biohub and Swift-based market making.
     
@@ -285,13 +291,13 @@ def map_czbiohub_and_swift_structures(seed: int = 0) -> Dict[str, Dict]:
     rng = np.random.default_rng(seed)
     generator = StructureGenerator()
 
-    def _seeded_domain(size: int, bias: float) -> Dict:
-        base = rng.normal(loc=bias, scale=0.05, size=(size, size))
+    def _seeded_domain(domain_size: int, bias: float) -> Dict:
+        base = rng.normal(loc=bias, scale=scale, size=(domain_size, domain_size))
         base = (base + base.T) / 2
         return generator.bootstrap_domain(base)
 
-    czbiohub_domain = _seeded_domain(6, 0.15)
-    swift_domain = _seeded_domain(6, -0.05)
+    czbiohub_domain = _seeded_domain(size, cz_bias)
+    swift_domain = _seeded_domain(size, swift_bias)
 
     meta = MetaStructure()
     relationship_map = meta.map_domain_relationships([czbiohub_domain, swift_domain])

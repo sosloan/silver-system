@@ -66,7 +66,7 @@ struct SwiftContentViewsFactory {
     /// Creates and returns a view for the specified content type
     /// - Parameter type: The type of content to display
     /// - Returns: A type-erased view configured for the content type
-    func makeView(for type: ContentType) -> AnyView {
+    static func makeView(for type: ContentType) -> AnyView {
         switch type {
         case .article(let text):
             return AnyView(ArticleView(text: text))
@@ -85,7 +85,7 @@ struct ContentDisplayView: View {
     let contentType: ContentType
     
     var body: some View {
-        SwiftContentViewsFactory().makeView(for: contentType)
+        SwiftContentViewsFactory.makeView(for: contentType)
     }
 }
 
@@ -101,8 +101,10 @@ struct ContentDisplayView_Previews: PreviewProvider {
             ContentDisplayView(contentType: .image("placeholder"))
                 .previewDisplayName("Image")
             
-            ContentDisplayView(contentType: .video(URL(string: "https://example.com/video.mp4")!))
-                .previewDisplayName("Video")
+            if let url = URL(string: "https://example.com/video.mp4") {
+                ContentDisplayView(contentType: .video(url))
+                    .previewDisplayName("Video")
+            }
         }
     }
 }

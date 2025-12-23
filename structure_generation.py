@@ -13,7 +13,7 @@ Creating the map as it goes.
 import numpy as np
 from scipy.linalg import eigh
 from scipy.sparse import csgraph
-from typing import List, Dict, Optional
+from typing import Any, List, Dict, Optional
 from dataclasses import dataclass
 
 
@@ -275,6 +275,40 @@ class RecursiveGeneration:
         return result
 
 
+def map_czbiohub_and_swift_structures(
+    seed: int = 0,
+    size: int = 6,
+    scale: float = 0.05,
+    cz_bias: float = 0.15,
+    swift_bias: float = -0.05
+) -> Dict[str, Any]:
+    """
+    Map structural generations between CZ Biohub and Swift-based market making.
+    
+    Creates two seeded domains representing each context and returns their
+    relationship map for downstream alignment.
+    """
+    rng = np.random.default_rng(seed)
+    generator = StructureGenerator()
+
+    def _seeded_domain(domain_size: int, bias: float) -> Dict:
+        base = rng.normal(loc=bias, scale=scale, size=(domain_size, domain_size))
+        base = (base + base.T) / 2
+        return generator.bootstrap_domain(base)
+
+    czbiohub_domain = _seeded_domain(size, cz_bias)
+    swift_domain = _seeded_domain(size, swift_bias)
+
+    meta = MetaStructure()
+    relationship_map = meta.map_domain_relationships([czbiohub_domain, swift_domain])
+
+    return {
+        "czbiohub": czbiohub_domain,
+        "swift_market_making": swift_domain,
+        "relationship_map": relationship_map
+    }
+
+
 def demonstrate_structure_generation():
     """
     Demonstrate: Creating domains from Vā.
@@ -370,4 +404,3 @@ def demonstrate_structure_generation():
 
 if __name__ == "__main__":
     demonstrate_structure_generation()
-
